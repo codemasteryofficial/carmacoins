@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carmacoins Blockchain Voting System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+    
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+        }
+    
+        h1,
+        h2 {
+            text-align: center;
+        }
+    
+        .vote-section,
+        .results-section,
+        .validation-section {
+            margin-bottom: 40px;
+        }
+    
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    
+        label {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+    
+        input[type="text"] {
+            padding: 10px;
+            margin-bottom: 20px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    
+        button:hover {
+            background-color: #0056b3;
+        }
+    
+        .message {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+    
+        .results {
+            margin-top: 20px;
+            text-align: center;
+        }
+    
+        .results div {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Carmacoins Blockchain Voting System</h1>
+        <div class="vote-section">
+            <h2>Cast Your Vote</h2>
+            <form onsubmit="castVote(event)">
+                <label for="voterId">Voter ID:</label>
+                <input type="text" id="voterId" name="voterId">
+
+                <label for="voterId">Signature:</label>
+                <input type="text" id="signature" name="signature">
+
+                <label for="candidate">Candidate:</label>
+                <input type="text" id="candidate" name="candidate">
+
+                <button type="submit">Vote</button>
+            </form>
+            <div id="voteMessage" class="message"></div>
+        </div>
+    </div>
+</body>
+<script>
+    const apiUrl = 'http://localhost:3000';
+
+    const voterIdEl = document.getElementById('voterId');
+    const signatureEl = document.getElementById('signature');
+    const candidateEl = document.getElementById('candidate');
+    
+    async function castVote(e) {
+        e.preventDefault()
+
+        const voterId = voterIdEl.value;
+        const signature = signatureEl.value;
+        const candidate = candidateEl.value;
+
+        if (!voterId || !signature || !candidate) {
+            alert('Invalid input. Please fill in all fields.');
+            return;
+        }
+
+        const voteData = {
+            voterId,
+            signature,
+            candidate
+        };
+
+        try {
+            const response = await fetch(`${apiUrl}/vote`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(voteData)
+            });
+            const result = await response.json();
+            alert(result.message);
+        } catch (error) {
+            console.error('Error casting vote:', error);
+        }
+    }
+
+    async function getResults() {
+        try {
+            const response = await fetch(`${apiUrl}/results`);
+            const results = await response.json();
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>Voting Results</h2>';
+
+            for (let candidate in results) {
+                resultsDiv.innerHTML += `<p>${candidate}: ${results[candidate]} votes</p>`;
+            }
+        } catch (error) {
+            console.error('Error fetching results:', error);
+        }
+    }
+
+    async function validateChain() {
+        try {
+            const response = await fetch(`${apiUrl}/validate`);
+            const validation = await response.json();
+
+            const validationDiv = document.getElementById('validation');
+            validationDiv.innerHTML = `<h2>Blockchain Validation</h2><p>Is the blockchain valid? ${validation.isValid ? 'Yes' : 'No'}</p>`;
+        } catch (error) {
+            console.error('Error validating blockchain:', error);
+        }
+    }
+</script>
+
+</html>
